@@ -1,0 +1,57 @@
+---
+- name: install the latest version of Apache
+  hosts: localhost
+  tasks:
+  - name: install httpd
+    yum:
+      name: httpd
+      state: latest
+       
+  - name: restart and enable service
+    service: 
+      name: httpd
+      state: restarted
+      enabled: yes
+
+  - name: Creating index file
+    blockinfile:
+      path: /var/www/html/index.html
+      create: yes 
+      block: |
+        simple hosting
+        helloo
+
+  - name: creating configuration gile
+    blockinfile:
+      path: /etc/httpd/conf.d/1.conf
+      create: yes 
+      block: |
+        <virtualhost *:80>
+        servername server.example.com
+        documentroot /var/www/html
+        </virtualhost> 
+        <directory /var/www/html>
+        require all granted
+        </directory>
+
+  - name: check conf file 
+    command: httpd -t
+ 
+  - name: restart and enable service
+    service: 
+      name: httpd
+      state: restarted
+
+  - name: Open port 80 for http access
+    firewalld:
+      service: http
+      permanent: true
+      state: enabled
+
+  - name: Restart the firewalld service to load in the firewall changes
+    service: 
+      name: firewalld 
+      state: restarted
+ 
+#  - name: Starting Firefox
+#    command: curl server.example.com
